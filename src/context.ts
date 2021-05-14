@@ -46,6 +46,7 @@ let config: COSConfig = {
   secret_key: "",
   bucket: "",
   region: "",
+  cdnDomain: "",
   base: "",
   input: "",
   output: "",
@@ -115,6 +116,7 @@ export const globalContext: GlobalContext = {
   },
 
   get BASE_URL() {
+    if (config.cdnDomain) return config.cdnDomain.replace(/\/$/, "");
     return `https://${config.bucket}.cos.${config.region}.myqcloud.com`;
   },
 };

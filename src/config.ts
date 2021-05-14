@@ -3,6 +3,7 @@ export type COSConfig = {
   secret_key: string;
   bucket: string;
   region: string;
+  cdnDomain: string;
 
   base: string;
   input: string;
@@ -16,6 +17,7 @@ export const INITIAL_CONFIG: COSConfig = {
   secret_key: "",
   bucket: "",
   region: "",
+  cdnDomain: "",
 
   base: "/",
   input: "images",

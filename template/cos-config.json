@@ -1,9 +1,11 @@
 {
   "secret_id": "secret id",
   "secret_key": "secret key",
-  
+
   "bucket": "bucket name",
   "region": "bucket region",
+  
+  "cdnDomain": "cdn 加速域名",
 
   "base": "腾讯云 cos 目录",
 
