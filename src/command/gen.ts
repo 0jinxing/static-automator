@@ -15,7 +15,7 @@ function genScss(record: Record<string, string>) {
   const { BASE_URL, BIN_PROJECT_PATH } = globalContext;
 
   const vars = Object.keys(record)
-    .map((k) => `$${getScssVarName(k)}: url(${BASE_URL}${record[k]});`)
+    .map((k) => `$${getScssVarName(k)}: url(${BASE_URL}/${record[k]});`)
     .join("\n");
 
   return fs
