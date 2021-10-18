@@ -20,7 +20,7 @@ function genScss(record: Record<string, string>) {
 
   return fs
     .readFileSync(
-      path.resolve(BIN_PROJECT_PATH, "template", "cos-helper.scss"),
+      path.resolve(BIN_PROJECT_PATH, "template", "static-helper.scss"),
       "utf-8"
     )
     .replace(/[\s]*\/\*[\s]*INJECT_VARIABLE[\s]*\*\/[\s]*/m, vars);
@@ -31,7 +31,7 @@ function genJs(record: Record<string, string>) {
 
   return fs
     .readFileSync(
-      path.resolve(BIN_PROJECT_PATH, "template", "cos-helper.js"),
+      path.resolve(BIN_PROJECT_PATH, "template", "static-helper.js"),
       "utf-8"
     )
     .replace(
@@ -70,7 +70,7 @@ export async function command() {
 
   if (generate.js) {
     fs.writeFileSync(
-      path.resolve(saveDir, "cos-helper.js"),
+      path.resolve(saveDir, "static-helper.js"),
       Buffer.from(
         prettier.format(genJs(genRecord), { parser: "babel" }),
         "utf-8"
@@ -80,7 +80,7 @@ export async function command() {
 
   if (generate.scss) {
     fs.writeFileSync(
-      path.resolve(saveDir, "cos-helper.scss"),
+      path.resolve(saveDir, "static-helper.scss"),
       Buffer.from(
         prettier.format(genScss(genRecord), { parser: "scss" }),
         "utf-8"

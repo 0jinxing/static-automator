@@ -1,5 +1,5 @@
 {
-  "name": "wd-cos",
+  "name": "static-automator",
   "version": "1.0.2",
   "main": "index.js",
   "license": "MIT",
@@ -9,6 +9,7 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
+    "ali-oss": "^6.16.0",
     "chalk": "^4.1.1",
     "commander": "^7.2.0",
     "cos-nodejs-sdk-v5": "^2.9.14",
@@ -17,6 +18,7 @@
     "prettier": "^2.2.1"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.0.11",
     "@types/glob": "^7.1.3",
     "@types/node": "^15.0.2",
     "@types/prettier": "^2.2.3",

@@ -1,9 +1,10 @@
-export type COSConfig = {
+export type Conf = {
+  type: "ali" | "tencent";
   secret_id: string;
   secret_key: string;
   bucket: string;
   region: string;
-  cdnDomain: string;
+  cdn: string;
 
   base: string;
   input: string;
@@ -12,12 +13,13 @@ export type COSConfig = {
   generate?: { scss?: boolean; js?: boolean };
 };
 
-export const INITIAL_CONFIG: COSConfig = {
+export const INITIAL_CONFIG: Conf = {
+  type: "tencent",
   secret_id: "",
   secret_key: "",
   bucket: "",
   region: "",
-  cdnDomain: "",
+  cdn: "",
 
   base: "/",
   input: "images",
@@ -26,7 +28,7 @@ export const INITIAL_CONFIG: COSConfig = {
   generate: { scss: true, js: true },
 };
 
-export function mergeConfig(c1: COSConfig, c2: COSConfig): COSConfig {
+export function mergeConfig(c1: Conf, c2: Conf): Conf {
   return {
     ...c1,
     ...c2,

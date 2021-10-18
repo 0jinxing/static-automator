@@ -1,14 +1,11 @@
 {
+  "type": "tencent",
   "secret_id": "secret id",
   "secret_key": "secret key",
-
   "bucket": "bucket name",
   "region": "bucket region",
-  
-  "cdnDomain": "cdn 加速域名",
-
+  "cdn": "cdn 加速域名",
   "base": "腾讯云 cos 目录",
-
   "input": "上传的图片目录",
   "output": "代码生成目录",
 

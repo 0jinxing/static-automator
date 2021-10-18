@@ -7,11 +7,11 @@ import glob from "glob";
 import prettier from "prettier";
 import { getPath, PROJECT } from "./utils/pkg";
 import { pathNormalize } from "./utils/normalize";
-import { COSConfig, INITIAL_CONFIG, mergeConfig } from "./config";
+import { Conf, INITIAL_CONFIG, mergeConfig } from "./config";
 
 export type GlobalContext = {
   record: Record<string, string>;
-  config: COSConfig;
+  config: Conf;
 
   imageFiles: string[];
   md5FileAameArr: string[];
@@ -31,7 +31,7 @@ export type GlobalContext = {
 };
 
 // 配置文件
-const CONFIG_FILE = "cos-config.json";
+const CONFIG_FILE = "static-config.json";
 const PROJECT_CONFIG = path.resolve(PROJECT.path, CONFIG_FILE);
 
 // 已经上传文件记录
@@ -41,12 +41,13 @@ const PROJECT_RECORD = path.resolve(PROJECT.path, RECORD_FILE);
 const PRETTOERRC = ".prettierrc";
 const PROJECT_PRETTOERRC = path.resolve(PROJECT.path, PRETTOERRC);
 
-let config: COSConfig = {
+let config: Conf = {
+  type: "tencent",
   secret_id: "",
   secret_key: "",
   bucket: "",
   region: "",
-  cdnDomain: "",
+  cdn: "",
   base: "",
   input: "",
   output: "",
@@ -116,7 +117,10 @@ export const globalContext: GlobalContext = {
   },
 
   get BASE_URL() {
-    if (config.cdnDomain) return config.cdnDomain.replace(/\/$/, "");
+    if (config.cdn) return config.cdn.replace(/\/$/, "");
+    if (config.type === "ali") {
+      return `https://${config.bucket}.${config.region}.aliyuncs.com`;
+    }
     return `https://${config.bucket}.cos.${config.region}.myqcloud.com`;
   },
 };
