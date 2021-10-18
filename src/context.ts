@@ -35,7 +35,7 @@ const CONFIG_FILE = "static-config.json";
 const PROJECT_CONFIG = path.resolve(PROJECT.path, CONFIG_FILE);
 
 // 已经上传文件记录
-const RECORD_FILE = "cos-record.json";
+const RECORD_FILE = "static-record.json";
 const PROJECT_RECORD = path.resolve(PROJECT.path, RECORD_FILE);
 
 const PRETTOERRC = ".prettierrc";
