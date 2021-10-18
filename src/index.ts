@@ -10,11 +10,11 @@ import { command as gen } from "./command/gen";
 import { globalContext } from "./context";
 
 program
-  .option("--secretId <string>")
-  .option("--secretKey <string>")
-  .option("-i, --init", "初始化 配置 文件")
-  .option("-s, --sync", "同步图片到 腾讯云 cos")
-  .option("-g, --gen", "生成 cos 相关代码");
+  .option("--secretId <string>", "Secret Id")
+  .option("--secretKey <string>", "Secret Key")
+  .option("-i, --init", "初始化配置文件")
+  .option("-s, --sync", "上传图片到存储桶")
+  .option("-g, --gen", "生成相关代码");
 
 program.parse(process.argv);
 

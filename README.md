@@ -1,4 +1,4 @@
-🥷🥷 一个 COS 自动上传工具（代码自动生成）
+🤿 一个 COS 自动上传工具（代码自动生成）
 
 ## 解决的痛点
 
@@ -11,27 +11,32 @@
 ## 安装
 
 ```bash
-npm install -g wd-cos --registry http://172.26.59.72:4873
+npm install -g static-automator # or `sudo npm install -g static-automator `
 ```
 
 ## 使用
 
 ```bash
-wd-cos -h
+static-automator -h
 
-# Usage: wd-cos [options]
+# Usage: static-automator [options]
 
 # Options:
-#   -i, --init  初始化 配置 文件
-#   -s, --sync  同步图片到 腾讯云 cos
-#   -g, --gen   生成 cos 相关代码
-#   -h, --help  display help for command
+#   --secretId <string>   Secret Id
+#   --secretKey <string>  Secret Key
+#   -i, --init            初始化配置文件
+#   -s, --sync            上传图片到存储桶
+#   -g, --gen             生成相关代码
+#   -h, --help            display help for command
 ```
 
 ## 配置
 
 ```yaml
 # https://console.cloud.tencent.com/cam/capi
+# https://ram.console.aliyun.com/manage/ak
+
+"type": "tencent" # or "type": "ali"
 "secret_id": "secret_id",
 "secret_key": "secret_key",
 
@@ -39,7 +44,7 @@ wd-cos -h
 "bucket": "bucket_name",
 "region": "bucket_region",
 
-"base": "腾讯云 cos 目录",
+"base": "存储桶目录",
 
 "input": "上传的图片目录",
 "output": "代码生成目录",

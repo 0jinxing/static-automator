@@ -1,6 +1,6 @@
 /**
  * 不要手动修改这里的代码
- * 这里遇到代码冲突的情况，请执行 wd-cos -g
+ * 这里遇到代码冲突的情况，请执行 static-automator -g
  */
 const RECORD = {
   /* INJECT_RECORD */
