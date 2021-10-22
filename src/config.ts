@@ -7,10 +7,10 @@ export type Conf = {
   cdn: string;
 
   base: string;
-  input: string;
+  input: string[];
   output: string;
 
-  generate?: { scss?: boolean; js?: boolean };
+  generate?: { js?: boolean; less?: boolean; scss?: boolean };
 };
 
 export const INITIAL_CONFIG: Conf = {
@@ -20,12 +20,11 @@ export const INITIAL_CONFIG: Conf = {
   bucket: "",
   region: "",
   cdn: "",
-
   base: "/",
-  input: "images",
-  output: "src/helper",
+  input: [],
+  output: "./",
 
-  generate: { scss: true, js: true },
+  generate: { js: true, less: false, scss: false },
 };
 
 export function mergeConfig(c1: Conf, c2: Conf): Conf {

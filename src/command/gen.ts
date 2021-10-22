@@ -2,89 +2,118 @@ import path from "path";
 import fs from "fs";
 import prettier from "prettier";
 import { globalContext } from "../context";
-import { genMd5Path } from "../utils/md5";
 import { PROJECT } from "../utils/pkg";
 
-function getScssVarName(fileName: string) {
+const { config, uploadItems, BASE_URL, BIN_PROJECT_PATH } = globalContext;
+const { generate } = config;
+const saveDir = path.resolve(PROJECT.path, config.output);
+
+function getStyleVarName(fileName: string) {
   return fileName
     .replace(/[^0-9A-Za-z]+([0-9A-Za-z])/g, (_, $1) => "-" + $1.toLowerCase())
     .toLowerCase();
 }
 
-function genScss(record: Record<string, string>) {
-  const { BASE_URL, BIN_PROJECT_PATH } = globalContext;
-
-  const vars = Object.keys(record)
-    .map((k) => `$${getScssVarName(k)}: url(${BASE_URL}/${record[k]});`)
+async function generatorScss(mapper: Record<string, string>) {
+  const vars = Object.keys(mapper)
+    .map((k) => `$${getStyleVarName(k)}: url(${BASE_URL}/${mapper[k]});`)
     .join("\n");
 
-  return fs
-    .readFileSync(
-      path.resolve(BIN_PROJECT_PATH, "template", "static-helper.scss"),
-      "utf-8"
-    )
-    .replace(/[\s]*\/\*[\s]*INJECT_VARIABLE[\s]*\*\/[\s]*/m, vars);
+  const content = await fs.promises.readFile(
+    path.resolve(BIN_PROJECT_PATH, "template", "static-helper.scss"),
+    "utf-8"
+  );
+
+  const text = content.replace(
+    /[\s]*\/\*[\s]*INJECT_VARIABLE[\s]*\*\/[\s]*/m,
+    vars
+  );
+
+  await fs.promises.writeFile(
+    path.resolve(saveDir, "static-helper.scss"),
+    Buffer.from(prettier.format(text, { parser: "scss" }), "utf-8")
+  );
 }
 
-function genJs(record: Record<string, string>) {
-  const { BASE_URL, BIN_PROJECT_PATH } = globalContext;
+async function generatorLess(mapper: Record<string, string>) {
+  const vars = Object.keys(mapper)
+    .map((k) => `@${getStyleVarName(k)}: url(${BASE_URL}/${mapper[k]});`)
+    .join("\n");
 
-  return fs
-    .readFileSync(
-      path.resolve(BIN_PROJECT_PATH, "template", "static-helper.js"),
-      "utf-8"
-    )
+  const content = await fs.promises.readFile(
+    path.resolve(BIN_PROJECT_PATH, "template", "static-helper.less"),
+    "utf-8"
+  );
+
+  const text = content.replace(
+    /[\s]*\/\*[\s]*INJECT_VARIABLE[\s]*\*\/[\s]*/m,
+    vars
+  );
+
+  await fs.promises.writeFile(
+    path.resolve(saveDir, "static-helper.less"),
+    Buffer.from(prettier.format(text, { parser: "less" }), "utf-8")
+  );
+}
+
+async function generatorJs(mapper: Record<string, string>) {
+  const content = await fs.promises.readFile(
+    path.resolve(BIN_PROJECT_PATH, "template", "static-helper.js"),
+    "utf-8"
+  );
+  const text = content
     .replace(
-      /INJECT_RECORD_KEY/,
-      Object.keys(record)
+      /INJECT_MAPPER_KEY/,
+      Object.keys(mapper)
         .map((i) => JSON.stringify(i))
         .join("|")
     )
     .replace(
-      /\{[\s]*\/\*[\s]*INJECT_RECORD[\s]*\*\/[\s]*\}/m,
-      JSON.stringify(record)
+      /\{[\s]*\/\*[\s]*INJECT_MAPPER[\s]*\*\/[\s]*\}/m,
+      JSON.stringify(mapper)
     )
     .replace(
       /"[\s]*\/\*[\s]*INJECT_BASE_URL[\s]*\*\/[\s]*"/m,
       JSON.stringify(BASE_URL)
     );
+
+  await fs.promises.writeFile(
+    path.resolve(saveDir, "static-helper.js"),
+    Buffer.from(prettier.format(text, { parser: "babel" }), "utf-8")
+  );
+}
+
+async function generatorMapper() {
+  const mapper: Record<string, string> = {};
+  for await (const item of uploadItems) {
+    mapper[item.realPath] = item.realPath;
+    if (item.md5) mapper[item.realPath] = item.md5Path;
+  }
+  return mapper;
 }
 
 export async function command() {
-  const { config, imageFiles } = globalContext;
-  const { generate } = config;
-
   if (!generate || (!generate.js && !generate.scss)) return;
 
-  const genRecord: Record<string, string> = {};
-
-  for (const fileName of imageFiles) {
-    genRecord[fileName] = await genMd5Path(fileName);
-  }
-
-  const saveDir = path.resolve(PROJECT.path, config.output);
+  const mapper = await generatorMapper();
 
   if (!fs.existsSync(saveDir)) {
     fs.promises.mkdir(saveDir, { recursive: true });
   }
 
+  const tasks: Promise<void>[] = [];
+
   if (generate.js) {
-    fs.writeFileSync(
-      path.resolve(saveDir, "static-helper.js"),
-      Buffer.from(
-        prettier.format(genJs(genRecord), { parser: "babel" }),
-        "utf-8"
-      )
-    );
+    tasks.push(generatorJs(mapper));
   }
 
   if (generate.scss) {
-    fs.writeFileSync(
-      path.resolve(saveDir, "static-helper.scss"),
-      Buffer.from(
-        prettier.format(genScss(genRecord), { parser: "scss" }),
-        "utf-8"
-      )
-    );
+    tasks.push(generatorScss(mapper));
   }
+
+  if (generate.less) {
+    tasks.push(generatorLess(mapper));
+  }
+
+  await Promise.all(tasks);
 }

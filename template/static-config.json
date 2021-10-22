@@ -6,8 +6,8 @@
   "region": "bucket region",
   "cdn": "cdn 加速域名",
   "base": "腾讯云 cos 目录",
-  "input": "上传的图片目录",
+  "input": ["上传的图片目录"],
   "output": "代码生成目录",
 
-  "generate": { "scss": true, "js": true }
+  "generate": { "js": true, "scss": false, "less": false }
 }

@@ -8,27 +8,26 @@ import prettier from "prettier";
 import { getPath, PROJECT } from "./utils/pkg";
 import { pathNormalize } from "./utils/normalize";
 import { Conf, INITIAL_CONFIG, mergeConfig } from "./config";
+import { genMd5Path } from "./utils/md5";
 
-export type GlobalContext = {
+type UploadItem = { realPath: string; md5Path: string; md5: boolean };
+
+interface GlobalContext {
   record: Record<string, string>;
   config: Conf;
-
-  imageFiles: string[];
-  md5FileAameArr: string[];
+  
+  uploadItems: Promise<UploadItem>[];
+  hitFileKeys: string[];
 
   BIN_PROJECT_PATH: string;
-
   CONFIG_FILE: string;
   PROJECT_CONFIG: string;
-
   RECORD_FILE: string;
   PROJECT_RECORD: string;
-
   PRETTOERRC: string;
   PROJECT_PRETTOERRC: string;
-
   BASE_URL: string;
-};
+}
 
 // 配置文件
 const CONFIG_FILE = "static-config.json";
@@ -49,7 +48,7 @@ let config: Conf = {
   region: "",
   cdn: "",
   base: "",
-  input: "",
+  input: [],
   output: "",
   generate: { scss: true, js: true },
 };
@@ -69,23 +68,31 @@ if (fs.existsSync(PROJECT_PRETTOERRC)) {
 
 export const globalContext: GlobalContext = {
   record,
+  config,
 
-  get config() {
-    return config;
+  get hitFileKeys() {
+    return Object.values(globalContext.record);
   },
 
-  get md5FileAameArr() {
-    return Object.keys(globalContext.record).map(
-      (k) => globalContext.record[k]
-    );
-  },
+  get uploadItems() {
+    const { input = [] } = config;
+    const files: Promise<UploadItem>[] = [];
 
-  get imageFiles() {
-    const imageFiles = glob
-      .sync(config.input, { absolute: false, nodir: true, root: PROJECT.path })
-      .map(pathNormalize);
+    for (let item of input) {
+      const md5 = /^md5#/i.test(item);
+      const pattern = item.replace(/^md5#/i, "");
 
-    return imageFiles;
+      files.push(
+        ...glob
+          .sync(pattern, { absolute: false, nodir: true, root: PROJECT.path })
+          .map(async (path) => ({
+            realPath: pathNormalize(path),
+            md5Path: await genMd5Path(path),
+            md5,
+          }))
+      );
+    }
+    return files;
   },
 
   get BIN_PROJECT_PATH() {
@@ -118,6 +125,7 @@ export const globalContext: GlobalContext = {
 
   get BASE_URL() {
     if (config.cdn) return config.cdn.replace(/\/$/, "");
+
     if (config.type === "ali") {
       return `https://${config.bucket}.${config.region}.aliyuncs.com`;
     }

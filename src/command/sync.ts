@@ -4,12 +4,11 @@ import OSS from "ali-oss";
 import ora from "ora";
 import prettier from "prettier";
 import { globalContext } from "../context";
-import { genMd5Path } from "../utils/md5";
 import chalk from "chalk";
 
-function putObjectToCOS(client: COS, key: string, srcFileName: string) {
-  const { config } = globalContext;
+const { PROJECT_RECORD, record, config, uploadItems } = globalContext;
 
+function putObjectToCOS(client: COS, key: string, srcFileName: string) {
   return client.putObject({
     Bucket: config.bucket,
     Region: config.region,
@@ -23,46 +22,45 @@ async function putObjectToOSS(client: OSS, key: string, srcFileName: string) {
 }
 
 export async function command() {
-  const { PROJECT_RECORD, record, config, imageFiles } = globalContext;
-
   let client: OSS | COS;
+  const { type, region, secret_id, secret_key, bucket } = config;
 
-  if (config.type === "ali") {
+  if (type === "ali") {
     client = new OSS({
-      region: config.region,
-      accessKeyId: config.secret_id,
-      accessKeySecret: config.secret_key,
-      bucket: config.bucket,
+      region,
+      bucket,
+      accessKeyId: secret_id,
+      accessKeySecret: secret_key,
     });
   } else {
-    client = new COS({
-      SecretId: config.secret_id,
-      SecretKey: config.secret_key,
-    });
+    client = new COS({ SecretId: secret_id, SecretKey: secret_key });
   }
 
   const spinner = ora("upload...").start();
 
-  const newRecord: Record<string, string> = {};
+  const needSaveRecord: Record<string, string> = {};
 
-  for (const fileName of imageFiles) {
-    const cosFileName = await genMd5Path(fileName);
+  for await (const file of uploadItems) {
+    const uploadPath = file.md5 ? file.md5Path : file.realPath;
 
-    if (!globalContext.md5FileAameArr.includes(cosFileName)) {
-      spinner.text = fileName;
+    const hitKey = file.md5
+      ? file.md5Path
+      : file.md5Path + "#" + file.realPath;
+
+    if (!globalContext.hitFileKeys.includes(hitKey)) {
+      spinner.text = file.realPath;
       if (config.type === "ali") {
-        await putObjectToOSS(client as OSS, cosFileName, fileName);
+        await putObjectToOSS(client as OSS, uploadPath, file.realPath);
       } else {
-        await putObjectToCOS(client as COS, cosFileName, fileName);
+        await putObjectToCOS(client as COS, uploadPath, file.realPath);
       }
     }
-    record[fileName] = cosFileName;
-
-    newRecord[fileName] = cosFileName;
+    record[file.realPath] = hitKey;
+    needSaveRecord[file.realPath] = hitKey;
   }
 
   spinner.succeed("上传完成");
-  const str = prettier.format(JSON.stringify(newRecord), { parser: "json" });
+  const str = prettier.format(JSON.stringify(needSaveRecord), { parser: "json" });
   fs.writeFileSync(PROJECT_RECORD, Buffer.from(str, "utf-8"));
 
   console.log(
