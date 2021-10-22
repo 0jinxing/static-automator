@@ -41,11 +41,11 @@ export async function command() {
   const needSaveRecord: Record<string, string> = {};
 
   for await (const file of uploadItems) {
-    const uploadPath = file.md5 ? file.md5Path : file.realPath;
-
-    const hitKey = file.md5
+    const uploadPath = file.md5
       ? file.md5Path
-      : file.md5Path + "#" + file.realPath;
+      : config.base + "/" + file.realPath;
+
+    const hitKey = file.md5 ? file.md5Path : file.md5Path + "#" + file.realPath;
 
     if (!globalContext.hitFileKeys.includes(hitKey)) {
       spinner.text = file.realPath;
@@ -60,7 +60,9 @@ export async function command() {
   }
 
   spinner.succeed("上传完成");
-  const str = prettier.format(JSON.stringify(needSaveRecord), { parser: "json" });
+  const str = prettier.format(JSON.stringify(needSaveRecord), {
+    parser: "json",
+  });
   fs.writeFileSync(PROJECT_RECORD, Buffer.from(str, "utf-8"));
 
   console.log(

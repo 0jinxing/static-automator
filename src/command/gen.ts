@@ -86,7 +86,7 @@ async function generatorJs(mapper: Record<string, string>) {
 async function generatorMapper() {
   const mapper: Record<string, string> = {};
   for await (const item of uploadItems) {
-    mapper[item.realPath] = item.realPath;
+    mapper[item.realPath] = `${config.base}/${item.realPath}`;
     if (item.md5) mapper[item.realPath] = item.md5Path;
   }
   return mapper;
